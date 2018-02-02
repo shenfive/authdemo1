@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     private  static final  int RC_SIGN_IN = 1;
 
     private GoogleApiClient mGoogleApiClient;
-
     private FirebaseAuth mAuth;
 
     @Override
@@ -47,69 +46,52 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        signInButton = (SignInButton)findViewById(R.id.singinButton);
         singOutButton = (Button)findViewById(R.id.singoutButton);
 
 
+        signInButton = (SignInButton)findViewById(R.id.singinButton);
 
-        // Configure Google Sign In
+        // 設定 FirebaseAuth 介面
+        mAuth = FirebaseAuth.getInstance();
+
+        // 設定 Google 登入 Client
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
-
         mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                 .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Toast.makeText(MainActivity.this,"Good",Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this,"Google 連線異常",Toast.LENGTH_LONG).show();
                     }
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API,gso)
                 .build();
-
-        //
         signInButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                signIn();
+                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                startActivityForResult(signInIntent, RC_SIGN_IN);
             }
         });
 
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            Toast.makeText(MainActivity.this, user.getDisplayName(), Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(MainActivity.this, "null", Toast.LENGTH_LONG).show();
-        }
-//        String name = mAuth.getCurrentUser().getDisplayName();
-//        if(mAuth.getCurrentUser().getDisplayName() == null){
-//            Toast.makeText(MainActivity.this, "null", Toast.LENGTH_LONG).show();
-//        }
-
-//
-    }
-
-    private void signIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == RC_SIGN_IN){
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             if (result.isSuccess()){
                 GoogleSignInAccount account = result.getSignInAccount();
+                //取得使用者並試登入
                 firebaseAuthWithGoogle(account);
-            }else {
-
             }
         }
     }
+
+    //登入 Firebase
     private  void firebaseAuthWithGoogle(final GoogleSignInAccount account){
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(),null);
         mAuth.signInWithCredential(credential)
@@ -127,10 +109,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void firebaseSingOut(View view){
-        // Firebase sign out
+        // Firebase 登出
         mAuth.signOut();
 
-        // Google sign out
+        // Google 登出
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()

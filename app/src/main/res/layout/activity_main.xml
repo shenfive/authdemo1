@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="idv.sjw.authdemo1.MainActivity">
-
     <com.google.android.gms.common.SignInButton
         android:id="@+id/singinButton"
         android:layout_width="200sp"
@@ -16,8 +15,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-
     <Button
         android:id="@+id/singoutButton"
         android:layout_width="wrap_content"
